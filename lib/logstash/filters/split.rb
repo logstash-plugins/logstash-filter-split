@@ -4,7 +4,7 @@ require "logstash/namespace"
 
 # The split filter is for splitting multiline messages into separate events.
 #
-# An example use case of this filter is for taking output from the 'exec' input
+# An example use case of this filter is for taking output from the `exec` input
 # which emits one event for the whole output of a command and splitting that
 # output by newline - making each line an event.
 #
