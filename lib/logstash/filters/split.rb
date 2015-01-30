@@ -21,6 +21,10 @@ class LogStash::Filters::Split < LogStash::Filters::Base
   # The field which value is split by the terminator
   config :field, :validate => :string, :default => "message"
 
+  # The field within the new event which the value is split into.
+  # If not set, target field defaults to split field name.
+  config :target, :validate => :string
+
   public
   def register
     # Nothing to do
@@ -32,12 +36,15 @@ class LogStash::Filters::Split < LogStash::Filters::Base
 
     original_value = event[@field]
 
-    # If for some reason the field is an array of values, take the first only.
-    original_value = original_value.first if original_value.is_a?(Array)
-
-    # Using -1 for 'limit' on String#split makes ruby not drop trailing empty
-    # splits.
-    splits = original_value.split(@terminator, -1)
+    if original_value.is_a?(Array)
+      splits = original_value
+    elsif original_value.is_a?(String)
+      # Using -1 for 'limit' on String#split makes ruby not drop trailing empty
+      # splits.
+      splits = original_value.split(@terminator, -1)
+    else
+      raise LogStash::ConfigurationError, "Only String and Array types are splittable. field:#{@field} is of type = #{original_value.class}"
+    end
 
     # Skip filtering if splitting this event resulted in only one thing found.
     return if splits.length == 1
@@ -48,7 +55,7 @@ class LogStash::Filters::Split < LogStash::Filters::Base
 
       event_split = event.clone
       @logger.debug("Split event", :value => value, :field => @field)
-      event_split[@field] = value
+      event_split[(@target || @field)] = value
       filter_matched(event_split)
 
       # Push this new event onto the stack at the LogStash::FilterWorker
