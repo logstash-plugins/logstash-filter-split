@@ -75,6 +75,11 @@ describe LogStash::Filters::Split do
       insist { subject[1]["array"] } == "bird"
       insist { subject[2]["array"] } == "sesame street"
     end
+
+    sample("array" => ["single-element"], "untouched" => "1\n2\n3") do
+      insist { subject["array"] } == "single-element"
+      insist { subject["untouched"] } == "1\n2\n3"
+    end
   end
 
   describe "split array into new field" do
