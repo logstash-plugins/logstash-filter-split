@@ -32,7 +32,7 @@ class LogStash::Filters::Split < LogStash::Filters::Base
 
   public
   def filter(event)
-    return unless filter?(event)
+    
 
     original_value = event[@field]
 
