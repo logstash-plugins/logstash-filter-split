@@ -9,7 +9,8 @@ require "logstash/namespace"
 # which emits one event for the whole output of a command and splitting that
 # output by newline - making each line an event.
 #
-# As another example, you could split an array of objects within a JSON structure.
+# As another example, you could split an array of objects within a JSON
+# structure.
 #
 # The end result of each split is a complete copy of the event
 # with only the current split section of the given field changed.
