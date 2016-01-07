@@ -2,11 +2,15 @@
 require "logstash/filters/base"
 require "logstash/namespace"
 
-# The split filter is for splitting multiline messages into separate events.
+# The split filter is for splitting multiline messages or arrays into 
+# separate events.
 #
 # An example use case of this filter is for taking output from the `exec` input
 # which emits one event for the whole output of a command and splitting that
 # output by newline - making each line an event.
+#
+# As another example, you could split an array of objects within a JSON
+# structure.
 #
 # The end result of each split is a complete copy of the event
 # with only the current split section of the given field changed.
@@ -18,7 +22,9 @@ class LogStash::Filters::Split < LogStash::Filters::Base
   # string.
   config :terminator, :validate => :string, :default => "\n"
 
-  # The field which value is split by the terminator
+  # The field which value is split by the terminator.  
+  # Can be a multiline message or the ID of an array.  
+  # Nested arrays are referenced like: "[object_id][array_id]"
   config :field, :validate => :string, :default => "message"
 
   # The field within the new event which the value is split into.
