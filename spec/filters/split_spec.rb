@@ -14,9 +14,9 @@ describe LogStash::Filters::Split do
 
     sample "big\nbird\nsesame street" do
       insist { subject.length } == 3
-      insist { subject[0]["message"] } == "big"
-      insist { subject[1]["message"] } == "bird"
-      insist { subject[2]["message"] } == "sesame street"
+      insist { subject[0].get("message") } == "big"
+      insist { subject[1].get("message") } == "bird"
+      insist { subject[2].get("message") } == "sesame street"
     end
   end
 
@@ -31,9 +31,9 @@ describe LogStash::Filters::Split do
 
     sample "big\tbird\tsesame street" do
       insist { subject.length } == 3
-      insist { subject[0]["message"] } == "big"
-      insist { subject[1]["message"] } == "bird"
-      insist { subject[2]["message"] } == "sesame street"
+      insist { subject[0].get("message") } == "big"
+      insist { subject[1].get("message") } == "bird"
+      insist { subject[2].get("message") } == "sesame street"
     end
   end
 
@@ -49,11 +49,11 @@ describe LogStash::Filters::Split do
     sample("custom" => "big\nbird\nsesame street", "do_not_touch" => "1\n2\n3") do
       insist { subject.length } == 3
       subject.each do |s|
-         insist { s["do_not_touch"] } == "1\n2\n3"
+         insist { s.get("do_not_touch") } == "1\n2\n3"
       end
-      insist { subject[0]["custom"] } == "big"
-      insist { subject[1]["custom"] } == "bird"
-      insist { subject[2]["custom"] } == "sesame street"
+      insist { subject[0].get("custom") } == "big"
+      insist { subject[1].get("custom") } == "bird"
+      insist { subject[2].get("custom") } == "sesame street"
     end
   end
 
@@ -69,16 +69,16 @@ describe LogStash::Filters::Split do
     sample("array" => ["big", "bird", "sesame street"], "untouched" => "1\n2\n3") do
       insist { subject.length } == 3
       subject.each do |s|
-         insist { s["untouched"] } == "1\n2\n3"
+         insist { s.get("untouched") } == "1\n2\n3"
       end
-      insist { subject[0]["array"] } == "big"
-      insist { subject[1]["array"] } == "bird"
-      insist { subject[2]["array"] } == "sesame street"
+      insist { subject[0].get("array") } == "big"
+      insist { subject[1].get("array") } == "bird"
+      insist { subject[2].get("array") } == "sesame street"
     end
 
     sample("array" => ["big"], "untouched" => "1\n2\n3") do
       insist { subject.is_a?(Logstash::Event) }
-      insist { subject["array"] } == "big"
+      insist { subject.get("array") } == "big"
     end
   end
 
@@ -94,9 +94,9 @@ describe LogStash::Filters::Split do
 
     sample("array" => ["big", "bird", "sesame street"]) do
       insist { subject.length } == 3
-      insist { subject[0]["element"] } == "big"
-      insist { subject[1]["element"] } == "bird"
-      insist { subject[2]["element"] } == "sesame street"
+      insist { subject[0].get("element") } == "big"
+      insist { subject[1].get("element") } == "bird"
+      insist { subject[2].get("element") } == "sesame street"
     end
   end
 

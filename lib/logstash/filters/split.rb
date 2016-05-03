@@ -37,7 +37,7 @@ class LogStash::Filters::Split < LogStash::Filters::Base
   def filter(event)
     
 
-    original_value = event[@field]
+    original_value = event.get(@field)
 
     if original_value.is_a?(Array)
       splits = original_value
@@ -58,7 +58,11 @@ class LogStash::Filters::Split < LogStash::Filters::Base
 
       event_split = event.clone
       @logger.debug("Split event", :value => value, :field => @field)
-      event_split[(@target || @field)] = value
+      if @target.nil?
+        event_split.set(@field, value)
+      else
+        event_split.set(@target, value)
+      end
       filter_matched(event_split)
 
       # Push this new event onto the stack at the LogStash::FilterWorker
