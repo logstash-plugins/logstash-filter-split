@@ -101,10 +101,21 @@ describe LogStash::Filters::Split do
   end
 
   context "when invalid type is passed" do
-    it "should raise exception" do
-      filter = LogStash::Filters::Split.new({"field" => "field"})
-      event = LogStash::Event.new("field" => 10)
-      expect {filter.filter(event)}.to raise_error
+    let(:filter) { LogStash::Filters::Split.new({"field" => "field"}) }
+    let(:logger) { filter.logger }
+    let(:event) { event = LogStash::Event.new("field" => 10) }
+
+    before do
+      allow(filter.logger).to receive(:warn).with(anything)
+      filter.filter(event)
+    end
+    
+    it "should log an error" do
+      expect(filter.logger).to have_received(:warn).with(/Only String and Array types are splittable/)
+    end
+
+    it "should add a '_splitparsefailure' tag" do
+      expect(event.get("tags")).to include(LogStash::Filters::Split::PARSE_FAILURE_TAG)
     end
   end
 end
