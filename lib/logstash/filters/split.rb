@@ -14,6 +14,7 @@ require "logstash/namespace"
 # The end result of each split is a complete copy of the event
 # with only the current split section of the given field changed.
 class LogStash::Filters::Split < LogStash::Filters::Base
+  PARSE_FAILURE_TAG = '_split_type_failure'.freeze
 
   config_name "split"
 
@@ -46,7 +47,9 @@ class LogStash::Filters::Split < LogStash::Filters::Base
       # splits.
       splits = original_value.split(@terminator, -1)
     else
-      raise LogStash::ConfigurationError, "Only String and Array types are splittable. field:#{@field} is of type = #{original_value.class}"
+      logger.warn("Only String and Array types are splittable. field:#{@field} is of type = #{original_value.class}")
+      event.tag(PARSE_FAILURE_TAG)
+      return
     end
 
     # Skip filtering if splitting this event resulted in only one thing found.
