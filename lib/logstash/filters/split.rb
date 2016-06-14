@@ -11,6 +11,33 @@ require "logstash/namespace"
 # the whole output of a command and splitting that output by newline -
 # making each line an event.
 #
+# Split filter can also be used to split array fields in events into individual events.
+# A very common pattern in JSON & XML is to make use of lists to group data together.
+#
+# For example, a json structure like this:
+#
+# [source,js]
+# ----------------------------------
+# { field1: ...,
+#  results: [
+#    { result ... },
+#    { result ... },
+#    { result ... },
+#    ...
+# ] }
+# ----------------------------------
+#
+# The split filter can be used on the above data to create separate events for each value of `results` field
+#
+# [source,js]
+# ----------------------------------
+# filter {
+#  split {
+#    field => "results"
+#  }
+# }
+# ----------------------------------
+#
 # The end result of each split is a complete copy of the event
 # with only the current split section of the given field changed.
 class LogStash::Filters::Split < LogStash::Filters::Base
@@ -19,10 +46,12 @@ class LogStash::Filters::Split < LogStash::Filters::Base
   config_name "split"
 
   # The string to split on. This is usually a line terminator, but can be any
-  # string.
+  # string. If you are splitting a JSON array into multiple events, you can ignore this field.
   config :terminator, :validate => :string, :default => "\n"
 
-  # The field whose value is to be split by the terminator.
+  # The field which value is split by the terminator.  
+  # Can be a multiline message or the ID of an array.  
+  # Nested arrays are referenced like: "[object_id][array_id]"
   config :field, :validate => :string, :default => "message"
 
   # The field within the new event which the value is split into.
