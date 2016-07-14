@@ -1,3 +1,6 @@
+## 3.1.1
+  - Relax constraint on logstash-core-plugin-api to >= 1.60 <= 2.99
+
 ## 3.1.0
   - Log and tag attempts to split invalid types instead of crashing logstash
 ## 3.0.1
