@@ -66,6 +66,8 @@ class LogStash::Filters::Split < LogStash::Filters::Base
   public
   def filter(event)
     
+    # Convert field to a string based on any format values    
+    @field = event.sprintf(@field)
 
     original_value = event.get(@field)
 
