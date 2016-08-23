@@ -66,8 +66,12 @@ class LogStash::Filters::Split < LogStash::Filters::Base
   public
   def filter(event)
     
+		# Convert field to a string based on any format values    
+		field = event.sprintf(@field)
+		# Same for target
+		target = event.sprintf(@target)
 
-    original_value = event.get(@field)
+    original_value = event.get(field)
 
     if original_value.is_a?(Array)
       splits = original_value
@@ -76,7 +80,7 @@ class LogStash::Filters::Split < LogStash::Filters::Base
       # splits.
       splits = original_value.split(@terminator, -1)
     else
-      logger.warn("Only String and Array types are splittable. field:#{@field} is of type = #{original_value.class}")
+      logger.warn("Only String and Array types are splittable. field:#{field} is of type = #{original_value.class}")
       event.tag(PARSE_FAILURE_TAG)
       return
     end
@@ -89,11 +93,11 @@ class LogStash::Filters::Split < LogStash::Filters::Base
       next if value.empty?
 
       event_split = event.clone
-      @logger.debug("Split event", :value => value, :field => @field)
+      @logger.debug("Split event", :value => value, :field => field)
       if @target.nil?
-        event_split.set(@field, value)
+        event_split.set(field, value)
       else
-        event_split.set(@target, value)
+        event_split.set(target, value)
       end
       filter_matched(event_split)
 

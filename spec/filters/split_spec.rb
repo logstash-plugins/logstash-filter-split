@@ -82,8 +82,38 @@ describe LogStash::Filters::Split do
     end
 
     sample("array" => ["single-element"], "untouched" => "1\n2\n3") do
-      insist { subject["array"] } == "single-element"
-      insist { subject["untouched"] } == "1\n2\n3"
+      insist { subject.get("array") } == "single-element"
+      insist { subject.get("untouched") } == "1\n2\n3"
+    end
+  end
+
+  describe "split array with string interpolation" do
+    config <<-CONFIG
+      filter {
+        split {
+          field => "%{array_field}"
+        }
+      }
+    CONFIG
+
+    sample("array" => ["big", "bird", "sesame street"], "array_field" => "array", "untouched" => "1\n2\n3") do
+      insist { subject.length } == 3
+      subject.each do |s|
+         insist { s.get("untouched") } == "1\n2\n3"
+      end
+      insist { subject[0].get("array") } == "big"
+      insist { subject[1].get("array") } == "bird"
+      insist { subject[2].get("array") } == "sesame street"
+    end
+
+    sample("array" => ["big"], "array_field" => "array", "untouched" => "1\n2\n3") do
+      insist { subject.is_a?(Logstash::Event) }
+      insist { subject.get("array") } == "big"
+    end
+
+    sample("array" => ["single-element"], "array_field" => "array", "untouched" => "1\n2\n3") do
+      insist { subject.get("array") } == "single-element"
+      insist { subject.get("untouched") } == "1\n2\n3"
     end
   end
 
@@ -104,6 +134,25 @@ describe LogStash::Filters::Split do
       insist { subject[2].get("element") } == "sesame street"
     end
   end
+
+  describe "split array into new field with string interpolation" do
+    config <<-CONFIG
+      filter {
+        split {
+          field => "array"
+          target => "%{target_field}"
+        }
+      }
+    CONFIG
+
+    sample("array" => ["big", "bird", "sesame street"], "target_field" => "final") do
+      insist { subject.length } == 3
+      insist { subject[0].get("final") } == "big"
+      insist { subject[1].get("final") } == "bird"
+      insist { subject[2].get("final") } == "sesame street"
+    end
+  end
+
 
   context "when invalid type is passed" do
     let(:filter) { LogStash::Filters::Split.new({"field" => "field"}) }
