@@ -76,11 +76,6 @@ describe LogStash::Filters::Split do
       insist { subject[2].get("array") } == "sesame street"
     end
 
-    sample("array" => ["big"], "untouched" => "1\n2\n3") do
-      insist { subject.is_a?(Logstash::Event) }
-      insist { subject.get("array") } == "big"
-    end
-
     sample("array" => ["single-element"], "untouched" => "1\n2\n3") do
       insist { subject.get("array") } == "single-element"
       insist { subject.get("untouched") } == "1\n2\n3"
@@ -104,11 +99,6 @@ describe LogStash::Filters::Split do
       insist { subject[0].get("array") } == "big"
       insist { subject[1].get("array") } == "bird"
       insist { subject[2].get("array") } == "sesame street"
-    end
-
-    sample("array" => ["big"], "array_field" => "array", "untouched" => "1\n2\n3") do
-      insist { subject.is_a?(Logstash::Event) }
-      insist { subject.get("array") } == "big"
     end
 
     sample("array" => ["single-element"], "array_field" => "array", "untouched" => "1\n2\n3") do
