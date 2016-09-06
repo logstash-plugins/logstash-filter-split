@@ -89,11 +89,10 @@ class LogStash::Filters::Split < LogStash::Filters::Base
       event_split = event.clone
       @logger.debug("Split event", :value => value, :field => @field)
 
-      output_field = (@target || @field)
-
       if @merge_hash and can_merge_root? value
         event_split.append(value)
       else
+        output_field = (@target || @field)
         if @merge_hash and can_merge_target? value
           value = event_split.get(output_field).merge(value)
         end
