@@ -40,15 +40,15 @@ class LogStash::Filters::Split < LogStash::Filters::Base
   end # def register
 
   private
-  def should_merge_root?(value)
-    # Merge root with hash if merge_hash is set to true and target field haven't been specified.
-    value.is_a? Hash and @merge_hash and @target.nil?
+  def can_merge_root?(value)
+    # Merge root with hash if target field haven't been specified.
+    value.is_a? Hash and @target.nil?
   end
 
   private
-  def should_merge_target?(value)
-    # Merge target with hash if merge_hash is set to true and target isn't source.
-    value.is_a? Hash and @merge_hash and @target and @target != @field
+  def can_merge_target?(value)
+    # Merge target with hash if target isn't source.
+    value.is_a? Hash and @target and @target != @field
   end
 
   private
@@ -91,10 +91,10 @@ class LogStash::Filters::Split < LogStash::Filters::Base
 
       output_field = (@target || @field)
 
-      if should_merge_root? value
+      if @merge_hash and can_merge_root? value
         event_split.append(value)
       else
-        if should_merge_target? value
+        if @merge_hash and can_merge_target? value
           value = event_split.get(output_field).merge(value)
         end
         event_split.set(output_field, value)
