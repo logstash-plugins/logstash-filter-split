@@ -28,14 +28,28 @@ class LogStash::Filters::Split < LogStash::Filters::Base
   # If not set, the target field defaults to split field name.
   config :target, :validate => :string
 
+  # If new event is a hash, merge it with the root object or target if specified.
+  config :merge_hash, :validate => :boolean, :default => false
+
   public
   def register
     # Nothing to do
   end # def register
 
+  private
+  def should_merge_root?(value)
+    # Merge root with hash if merge_hash is set to true and target field haven't been specified.
+    value.is_a? Hash and @merge_hash and @target.nil?
+  end
+
+  private
+  def should_merge_target?(value)
+    # Merge target with hash if merge_hash is set to true and target isn't source.
+    value.is_a? Hash and @merge_hash and (@target || @field) != @field
+  end
+
   public
   def filter(event)
-    
 
     original_value = event[@field]
 
@@ -58,7 +72,18 @@ class LogStash::Filters::Split < LogStash::Filters::Base
 
       event_split = event.clone
       @logger.debug("Split event", :value => value, :field => @field)
-      event_split[(@target || @field)] = value
+
+      output_field = (@target || @field)
+
+      if should_merge_root? value
+        event_split.append(value)
+      else
+        if should_merge_target? value
+          value = event_split.get(output_field).merge(value)
+        end
+        event_split.set(output_field, value)
+      end
+
       filter_matched(event_split)
 
       # Push this new event onto the stack at the LogStash::FilterWorker

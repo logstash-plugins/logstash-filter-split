@@ -37,6 +37,59 @@ describe LogStash::Filters::Split do
     end
   end
 
+  describe "merge object with root" do
+    config <<-CONFIG
+      filter {
+        split {
+          field => "events"
+          merge_hash => true
+        }
+      }
+    CONFIG
+
+    sample("still_here" => true, "events" => [{"id" => 2, "user" => "frank"}]) do
+      insist { subject.get("still_here") } == true
+      insist { subject.get("id") } == 2
+      insist { subject.get("user") } == "frank"
+      insist { subject.get("events") } == [{"id" => 2, "user" => "frank"}]
+    end
+  end
+
+  describe "merge object with target field" do
+    config <<-CONFIG
+      filter {
+        split {
+          field => "events"
+          merge_hash => true
+          target => "user"
+        }
+      }
+    CONFIG
+
+    sample("still_here" => true, "user" => {"id" => 3, "visits" => 10}, "events" => [{"id" => 2, "user" => "frank"}]) do
+      insist { subject.get("still_here") } == true
+      insist { subject.get("id") } == nil
+      insist { subject.get("user") } == {"id" => 2, "visits" => 10, "user" => "frank"}
+      insist { subject.get("events") } == [{"id" => 2, "user" => "frank"}]
+    end
+  end
+
+  describe "merge string as hash" do
+    config <<-CONFIG
+      filter {
+        split {
+          field => "events"
+          merge_hash => true
+        }
+      }
+    CONFIG
+
+    sample("events" => ["one", "two"]) do
+      insist { subject[0].get("events") } == "one"
+      insist { subject[1].get("events") } == "two"
+    end
+  end
+
   describe "custom field" do
     config <<-CONFIG
       filter {
@@ -104,7 +157,7 @@ describe LogStash::Filters::Split do
     it "should raise exception" do
       filter = LogStash::Filters::Split.new({"field" => "field"})
       event = LogStash::Event.new("field" => 10)
-      expect {filter.filter(event)}.to raise_error
+      expect {filter.filter(event)}.to raise_error(LogStash::ConfigurationError)
     end
   end
 end
