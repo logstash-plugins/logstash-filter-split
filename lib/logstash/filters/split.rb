@@ -31,6 +31,9 @@ class LogStash::Filters::Split < LogStash::Filters::Base
   # If new event is a hash, merge it with the root object or target if specified.
   config :merge_hash, :validate => :boolean, :default => false
 
+  # Delete source field after successful split unless target is the same.
+  config :delete_field, :validate => :boolean, :default => false
+
   public
   def register
     # Nothing to do
@@ -46,6 +49,19 @@ class LogStash::Filters::Split < LogStash::Filters::Base
   def should_merge_target?(value)
     # Merge target with hash if merge_hash is set to true and target isn't source.
     value.is_a? Hash and @merge_hash and @target and @target != @field
+  end
+
+  private
+  def can_delete_field?
+    # Delete source field as long as we aren't merging into the same field.
+    # We do allow an unspecified target since it will merge to root by default.
+    return true if @merge_hash and @target != @field
+
+    # Delete field as long as we aren't splitting into the same field.
+    return true if (@target || @field) != @field
+
+    # Field isn't in-use, it's ok to delete.
+    return false
   end
 
   public
@@ -82,6 +98,10 @@ class LogStash::Filters::Split < LogStash::Filters::Base
           value = event_split.get(output_field).merge(value)
         end
         event_split.set(output_field, value)
+      end
+
+      if @delete_field and can_delete_field?
+        event_split.remove(@field)
       end
 
       filter_matched(event_split)

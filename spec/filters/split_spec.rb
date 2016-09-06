@@ -55,6 +55,77 @@ describe LogStash::Filters::Split do
     end
   end
 
+  describe "delete field" do
+    config <<-CONFIG
+      filter {
+        split {
+          field => "in"
+          target => "out"
+          delete_field => true
+        }
+      }
+    CONFIG
+
+    sample("in" => "one\ntwo") do
+      insist { subject[0].get("out") } == "one"
+      insist { subject[1].get("out") } == "two"
+      insist { subject[0].get("in") } == nil
+      insist { subject[1].get("in") } == nil
+    end
+  end
+
+  describe "try to delete target field" do
+    config <<-CONFIG
+      filter {
+        split {
+          field => "in"
+          target => "in"
+          delete_field => true
+        }
+      }
+    CONFIG
+
+    sample("in" => "one\ntwo") do
+      insist { subject[0].get("in") } == "one"
+      insist { subject[1].get("in") } == "two"
+    end
+  end
+
+  describe "merge object with root and delete field" do
+    config <<-CONFIG
+      filter {
+        split {
+          field => "events"
+          merge_hash => true
+          delete_field => true
+        }
+      }
+    CONFIG
+
+    sample("still_here" => true, "events" => [{"id" => 2, "user" => "frank"}]) do
+      insist { subject.get("still_here") } == true
+      insist { subject.get("id") } == 2
+      insist { subject.get("events") } == nil
+    end
+  end
+
+  describe "merge object with target and try to delete target field" do
+    config <<-CONFIG
+      filter {
+        split {
+          field => "events"
+          target => "events"
+          merge_hash => true
+          delete_field => true
+        }
+      }
+    CONFIG
+
+    sample("events" => [{"id" => 2}]) do
+      insist { subject.get("events") } == {"id" => 2}
+    end
+  end
+
   describe "merge object with target field" do
     config <<-CONFIG
       filter {
