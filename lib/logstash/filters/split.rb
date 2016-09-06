@@ -45,7 +45,7 @@ class LogStash::Filters::Split < LogStash::Filters::Base
   private
   def should_merge_target?(value)
     # Merge target with hash if merge_hash is set to true and target isn't source.
-    value.is_a? Hash and @merge_hash and (@target || @field) != @field
+    value.is_a? Hash and @merge_hash and @target and @target != @field
   end
 
   public
