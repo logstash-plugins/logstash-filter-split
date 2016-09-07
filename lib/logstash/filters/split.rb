@@ -28,40 +28,86 @@ class LogStash::Filters::Split < LogStash::Filters::Base
   # If not set, the target field defaults to split field name.
   config :target, :validate => :string
 
+  # If new event is a hash, merge it with the root object or target if specified.
+  config :merge_hash, :validate => :boolean, :default => false
+
+  # Delete source field after successful split unless target is the same.
+  config :delete_field, :validate => :boolean, :default => false
+
   public
   def register
     # Nothing to do
   end # def register
 
+  private
+  def can_merge_root?(value)
+    # Merge root with hash if target field haven't been specified.
+    value.is_a? Hash and @target.nil?
+  end
+
+  private
+  def can_merge_target?(value)
+    # Merge target with hash if target isn't source.
+    value.is_a? Hash and @target and @target != @field
+  end
+
+  private
+  def can_delete_field?
+    # Delete source field as long as we aren't merging into the same field.
+    # We do allow an unspecified target since it will merge to root by default.
+    return true if @merge_hash and @target != @field
+
+    # Delete field as long as we aren't splitting into the same field.
+    return true if (@target || @field) != @field
+
+    # Field isn't in-use, it's ok to delete.
+    return false
+  end
+
   public
   def filter(event)
-    
 
     original_value = event[@field]
 
     if original_value.is_a?(Array)
       splits = original_value
     elsif original_value.is_a?(String)
-      # Using -1 for 'limit' on String#split makes ruby not drop trailing empty
-      # splits.
+      # Using -1 for 'limit' on String#split makes ruby not drop trailing empty splits.
       splits = original_value.split(@terminator, -1)
     else
-      raise LogStash::ConfigurationError, "Only String and Array types are splittable. field:#{@field} is of type = #{original_value.class}"
+      @logger.warn "Only String and Array types are splittable.", field: @field, type: original_value.class, event: event
+      return
     end
 
     # Skip filtering if splitting this event resulted in only one thing found.
     return if splits.length == 1 && original_value.is_a?(String)
-    #or splits[1].empty?
 
-    splits.each do |value|
+    splits.each_with_index do |value, index|
       next if value.empty?
 
       event_split = event.clone
       @logger.debug("Split event", :value => value, :field => @field)
-      event_split[(@target || @field)] = value
+
+      if @merge_hash and can_merge_root? value
+        LogStash::Util.hash_merge(event_split.to_hash, value)
+      else
+        if @merge_hash and can_merge_target? value
+          value = event_split.get(@target || @field).merge(value)
+        end
+        event_split.set(@target || @field, value)
+      end
+
+      if @delete_field and can_delete_field?
+        event_split.remove(@field)
+      end
+
+      event_split.set("@metadata", {
+        "split_index" => index + 1
+      })
+
       filter_matched(event_split)
 
-      # Push this new event onto the stack at the LogStash::FilterWorker
+      # Push this new event onto the stack at the LogStash::FilterWorker.
       yield event_split
     end
 

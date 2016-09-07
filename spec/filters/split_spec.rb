@@ -20,7 +20,7 @@ describe LogStash::Filters::Split do
     end
   end
 
-  describe "custome terminator" do
+  describe "custom terminator" do
     config <<-CONFIG
       filter {
         split {
@@ -34,6 +34,147 @@ describe LogStash::Filters::Split do
       insist { subject[0]["message"] } == "big"
       insist { subject[1]["message"] } == "bird"
       insist { subject[2]["message"] } == "sesame street"
+    end
+  end
+
+  describe "check metadata of clones" do
+    config <<-CONFIG
+      filter {
+        split { }
+      }
+    CONFIG
+
+    sample "one\ntwo\nthree" do
+      insist { subject[0]["message"] } == "one"
+      insist { subject[0]["[@metadata][split_index]"] } == 1
+      insist { subject[1]["message"] } == "two"
+      insist { subject[1]["[@metadata][split_index]"] } == 2
+      insist { subject[2]["message"] } == "three"
+      insist { subject[2]["[@metadata][split_index]"] } == 3
+    end
+  end
+
+  describe "merge object with root" do
+    config <<-CONFIG
+      filter {
+        split {
+          field => "events"
+          merge_hash => true
+        }
+      }
+    CONFIG
+
+    sample("still_here" => true, "events" => [{"id" => 2, "user" => "frank"}]) do
+      insist { subject.get("still_here") } == true
+      insist { subject.get("id") } == 2
+      insist { subject.get("user") } == "frank"
+      insist { subject.get("events") } == [{"id" => 2, "user" => "frank"}]
+    end
+  end
+
+  describe "delete field" do
+    config <<-CONFIG
+      filter {
+        split {
+          field => "in"
+          target => "out"
+          delete_field => true
+        }
+      }
+    CONFIG
+
+    sample("in" => "one\ntwo") do
+      insist { subject[0].get("out") } == "one"
+      insist { subject[1].get("out") } == "two"
+      insist { subject[0].get("in") } == nil
+      insist { subject[1].get("in") } == nil
+    end
+  end
+
+  describe "try to delete target field" do
+    config <<-CONFIG
+      filter {
+        split {
+          field => "in"
+          target => "in"
+          delete_field => true
+        }
+      }
+    CONFIG
+
+    sample("in" => "one\ntwo") do
+      insist { subject[0].get("in") } == "one"
+      insist { subject[1].get("in") } == "two"
+    end
+  end
+
+  describe "merge object with root and delete field" do
+    config <<-CONFIG
+      filter {
+        split {
+          field => "events"
+          merge_hash => true
+          delete_field => true
+        }
+      }
+    CONFIG
+
+    sample("still_here" => true, "events" => [{"id" => 2, "user" => "frank"}]) do
+      insist { subject.get("still_here") } == true
+      insist { subject.get("id") } == 2
+      insist { subject.get("events") } == nil
+    end
+  end
+
+  describe "merge object with target and try to delete target field" do
+    config <<-CONFIG
+      filter {
+        split {
+          field => "events"
+          target => "events"
+          merge_hash => true
+          delete_field => true
+        }
+      }
+    CONFIG
+
+    sample("events" => [{"id" => 2}]) do
+      insist { subject.get("events") } == {"id" => 2}
+    end
+  end
+
+  describe "merge object with target field" do
+    config <<-CONFIG
+      filter {
+        split {
+          field => "events"
+          merge_hash => true
+          target => "user"
+        }
+      }
+    CONFIG
+
+    sample("still_here" => true, "user" => {"id" => 3, "visits" => 10}, "events" => [{"id" => 2, "user" => "frank"}]) do
+      insist { subject.get("still_here") } == true
+      insist { subject.get("id") } == nil
+      insist { subject.get("user") } == {"id" => 2, "visits" => 10, "user" => "frank"}
+      insist { subject.get("events") } == [{"id" => 2, "user" => "frank"}]
+    end
+  end
+
+  describe "merge string as hash" do
+    config <<-CONFIG
+      filter {
+        split {
+          field => "events"
+          merge_hash => true
+        }
+      }
+    CONFIG
+
+    sample("events" => ["one", "two"]) do
+      insist { subject[0].get("events") } == "one"
+      insist { subject[1].get("events") } == "two"
     end
   end
 
@@ -54,6 +195,10 @@ describe LogStash::Filters::Split do
       insist { subject[0]["custom"] } == "big"
       insist { subject[1]["custom"] } == "bird"
       insist { subject[2]["custom"] } == "sesame street"
+    end
+
+    sample("custom" => 1) do
+      insist { subject.get("custom") } == 1
     end
   end
 
@@ -97,14 +242,6 @@ describe LogStash::Filters::Split do
       insist { subject[0]["element"] } == "big"
       insist { subject[1]["element"] } == "bird"
       insist { subject[2]["element"] } == "sesame street"
-    end
-  end
-
-  context "when invalid type is passed" do
-    it "should raise exception" do
-      filter = LogStash::Filters::Split.new({"field" => "field"})
-      event = LogStash::Event.new("field" => 10)
-      expect {filter.filter(event)}.to raise_error
     end
   end
 end
