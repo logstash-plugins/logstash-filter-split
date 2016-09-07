@@ -92,11 +92,10 @@ class LogStash::Filters::Split < LogStash::Filters::Base
       if @merge_hash and can_merge_root? value
         event_split.append(value)
       else
-        output_field = (@target || @field)
         if @merge_hash and can_merge_target? value
-          value = event_split.get(output_field).merge(value)
+          value = event_split.get(@target || @field).merge(value)
         end
-        event_split.set(output_field, value)
+        event_split.set(@target || @field, value)
       end
 
       if @delete_field and can_delete_field?
