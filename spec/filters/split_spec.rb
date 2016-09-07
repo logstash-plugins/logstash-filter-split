@@ -196,6 +196,10 @@ describe LogStash::Filters::Split do
       insist { subject[1]["custom"] } == "bird"
       insist { subject[2]["custom"] } == "sesame street"
     end
+
+    sample("custom" => 1) do
+      insist { subject.get("custom") } == 1
+    end
   end
 
   describe "split array" do
@@ -238,14 +242,6 @@ describe LogStash::Filters::Split do
       insist { subject[0]["element"] } == "big"
       insist { subject[1]["element"] } == "bird"
       insist { subject[2]["element"] } == "sesame street"
-    end
-  end
-
-  context "when invalid type is passed" do
-    it "should raise exception" do
-      filter = LogStash::Filters::Split.new({"field" => "field"})
-      event = LogStash::Event.new("field" => 10)
-      expect {filter.filter(event)}.to raise_error(LogStash::ConfigurationError)
     end
   end
 end

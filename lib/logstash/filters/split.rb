@@ -72,16 +72,16 @@ class LogStash::Filters::Split < LogStash::Filters::Base
     if original_value.is_a?(Array)
       splits = original_value
     elsif original_value.is_a?(String)
-      # Using -1 for 'limit' on String#split makes ruby not drop trailing empty
-      # splits.
+      # Using -1 for 'limit' on String#split makes ruby not drop trailing empty splits.
       splits = original_value.split(@terminator, -1)
     else
-      raise LogStash::ConfigurationError, "Only String and Array types are splittable. field:#{@field} is of type = #{original_value.class}"
+      @logger.warn "Only String and Array types are splittable. " \
+                   "Field #{@field} is of type #{original_value.class}."
+      return
     end
 
     # Skip filtering if splitting this event resulted in only one thing found.
     return if splits.length == 1 && original_value.is_a?(String)
-    #or splits[1].empty?
 
     splits.each_with_index do |value, index|
       next if value.empty?
@@ -108,7 +108,7 @@ class LogStash::Filters::Split < LogStash::Filters::Base
 
       filter_matched(event_split)
 
-      # Push this new event onto the stack at the LogStash::FilterWorker
+      # Push this new event onto the stack at the LogStash::FilterWorker.
       yield event_split
     end
 
