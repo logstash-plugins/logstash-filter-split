@@ -20,7 +20,7 @@ describe LogStash::Filters::Split do
     end
   end
 
-  describe "custome terminator" do
+  describe "custom terminator" do
     config <<-CONFIG
       filter {
         split {
@@ -34,6 +34,23 @@ describe LogStash::Filters::Split do
       insist { subject[0]["message"] } == "big"
       insist { subject[1]["message"] } == "bird"
       insist { subject[2]["message"] } == "sesame street"
+    end
+  end
+
+  describe "check metadata of clones" do
+    config <<-CONFIG
+      filter {
+        split { }
+      }
+    CONFIG
+
+    sample "one\ntwo\nthree" do
+      insist { subject[0]["message"] } == "one"
+      insist { subject[0]["[@metadata][split_index]"] } == 1
+      insist { subject[1]["message"] } == "two"
+      insist { subject[1]["[@metadata][split_index]"] } == 2
+      insist { subject[2]["message"] } == "three"
+      insist { subject[2]["[@metadata][split_index]"] } == 3
     end
   end
 

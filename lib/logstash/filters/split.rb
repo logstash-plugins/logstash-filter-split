@@ -83,7 +83,7 @@ class LogStash::Filters::Split < LogStash::Filters::Base
     return if splits.length == 1 && original_value.is_a?(String)
     #or splits[1].empty?
 
-    splits.each do |value|
+    splits.each_with_index do |value, index|
       next if value.empty?
 
       event_split = event.clone
@@ -101,6 +101,10 @@ class LogStash::Filters::Split < LogStash::Filters::Base
       if @delete_field and can_delete_field?
         event_split.remove(@field)
       end
+
+      event_split.set("@metadata", {
+        "split_index" => index + 1
+      })
 
       filter_matched(event_split)
 
