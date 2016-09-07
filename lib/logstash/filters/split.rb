@@ -75,8 +75,7 @@ class LogStash::Filters::Split < LogStash::Filters::Base
       # Using -1 for 'limit' on String#split makes ruby not drop trailing empty splits.
       splits = original_value.split(@terminator, -1)
     else
-      @logger.warn "Only String and Array types are splittable. " \
-                   "Field #{@field} is of type #{original_value.class}."
+      @logger.warn "Only String and Array types are splittable.", field: @field, type: original_value.class, event: event
       return
     end
 
