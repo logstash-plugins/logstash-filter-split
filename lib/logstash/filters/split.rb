@@ -60,7 +60,7 @@ class LogStash::Filters::Split < LogStash::Filters::Base
   # The field within the new event which the value is split into.
   # If not set, the target field defaults to split field name.
   # String interpolation is also available for this field,
-  # it means that "field => %{other_field}" will use the
+  # it means that "target => %{other_field}" will use the
   # field value of "other_field".
   config :target, :validate => :string
 
