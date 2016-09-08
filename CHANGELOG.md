@@ -1,3 +1,6 @@
+## 3.1.2
+  - String interpolation is now available for "field" and "target" fields
+
 ## 3.1.1
   - Relax constraint on logstash-core-plugin-api to >= 1.60 <= 2.99
 
