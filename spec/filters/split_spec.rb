@@ -82,8 +82,8 @@ describe LogStash::Filters::Split do
     end
 
     sample("array" => ["single-element"], "untouched" => "1\n2\n3") do
-      insist { subject["array"] } == "single-element"
-      insist { subject["untouched"] } == "1\n2\n3"
+      insist { subject.get("array") } == "single-element"
+      insist { subject.get("untouched") } == "1\n2\n3"
     end
   end
 
