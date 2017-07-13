@@ -70,7 +70,7 @@ class LogStash::Filters::Split < LogStash::Filters::Base
     original_value = event.get(@field)
 
     if original_value.is_a?(Array)
-      splits = original_value
+      splits = target.nil? ? event.remove(@field) : original_value
     elsif original_value.is_a?(String)
       # Using -1 for 'limit' on String#split makes ruby not drop trailing empty
       # splits.
