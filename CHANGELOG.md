@@ -1,3 +1,5 @@
+## 3.1.3
+  - Improved performance when cloning events with big arrays
 ## 3.1.1
   - Relax constraint on logstash-core-plugin-api to >= 1.60 <= 2.99
 
