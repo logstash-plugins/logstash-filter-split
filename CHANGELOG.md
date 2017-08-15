@@ -1,3 +1,6 @@
+## 3.1.4
+  - Fix some documentation issues
+
 ## 3.1.3
   - Improved performance by no longer cloning the source field if it is the same as the target field
 ## 3.1.1
