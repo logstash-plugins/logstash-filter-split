@@ -1,3 +1,6 @@
+## 3.1.5
+  - Fix crash on arrays with null values
+
 ## 3.1.4
   - Fix some documentation issues
 
