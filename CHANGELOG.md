@@ -1,5 +1,8 @@
-## 3.1.5
+## 3.1.6
   - Fix crash on arrays with null values
+
+## 3.1.5
+  - Update gemspec summary
 
 ## 3.1.4
   - Fix some documentation issues
