@@ -87,6 +87,23 @@ describe LogStash::Filters::Split do
     end
   end
 
+  describe "split array with nil" do
+    config <<-CONFIG
+      filter {
+        split {
+          field => "array"
+        }
+      }
+    CONFIG
+
+    sample("array" => ["big", nil, "bird", nil, "sesame street"]) do
+      insist { subject.length } == 3
+      insist { subject[0].get("array") } == "big"
+      insist { subject[1].get("array") } == "bird"
+      insist { subject[2].get("array") } == "sesame street"
+    end
+  end
+
   describe "split array into new field" do
     config <<-CONFIG
       filter {
