@@ -58,15 +58,12 @@ class LogStash::Filters::Split < LogStash::Filters::Base
   # If not set, the target field defaults to split field name.
   config :target, :validate => :string
 
-  public
   def register
-    # Nothing to do
-  end # def register
+    # set @target to @field if not configured
+    @target ||= @field
+  end
 
-  public
   def filter(event)
-    
-
     original_value = event.get(@field)
 
     if original_value.is_a?(Array)
@@ -83,18 +80,13 @@ class LogStash::Filters::Split < LogStash::Filters::Base
 
     # Skip filtering if splitting this event resulted in only one thing found.
     return if splits.length == 1 && original_value.is_a?(String)
-    #or splits[1].empty?
 
     splits.each do |value|
-      next if value.nil? || value.empty?
+      next if value.nil? || (value.is_a?(String) && value.empty?)
+      @logger.debug? && @logger.debug("Split event", :value => value, :field => @field)
 
       event_split = event.clone
-      @logger.debug("Split event", :value => value, :field => @field)
-      if @target.nil?
-        event_split.set(@field, value)
-      else
-        event_split.set(@target, value)
-      end
+      event_split.set(@target, value)
       filter_matched(event_split)
 
       # Push this new event onto the stack at the LogStash::FilterWorker
@@ -103,5 +95,5 @@ class LogStash::Filters::Split < LogStash::Filters::Base
 
     # Cancel this event, we'll use the newly generated ones above.
     event.cancel
-  end # def filter
-end # class LogStash::Filters::Split
+  end
+end
