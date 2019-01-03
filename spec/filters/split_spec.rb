@@ -122,6 +122,42 @@ describe LogStash::Filters::Split do
     end
   end
 
+  describe "split array of numerics" do
+    config <<-CONFIG
+      filter {
+        split {
+          field => "array"
+          target => "element"
+        }
+      }
+    CONFIG
+
+    sample("array" => [1, 2, 3]) do
+      insist { subject.length } == 3
+      insist { subject[0].get("element") } == 1
+      insist { subject[1].get("element") } == 2
+      insist { subject[2].get("element") } == 3
+    end
+  end
+
+  describe "split array of numerics and strings" do
+    config <<-CONFIG
+      filter {
+        split {
+          field => "array"
+          target => "element"
+        }
+      }
+    CONFIG
+
+    sample("array" => [1, 2, "three", ""]) do
+      insist { subject.length } == 3
+      insist { subject[0].get("element") } == 1
+      insist { subject[1].get("element") } == 2
+      insist { subject[2].get("element") } == "three"
+    end
+  end
+
   context "when invalid type is passed" do
     let(:filter) { LogStash::Filters::Split.new({"field" => "field"}) }
     let(:logger) { filter.logger }
