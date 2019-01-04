@@ -1,3 +1,6 @@
+## 3.1.7
+  - Fixed numeric values, optimized @target verification, cleanups and specs [36](https://github.com/logstash-plugins/logstash-filter-split/pull/36)
+
 ## 3.1.6
   - Fix crash on arrays with null values
 
