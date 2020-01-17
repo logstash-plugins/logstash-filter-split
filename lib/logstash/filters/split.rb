@@ -59,15 +59,13 @@ class LogStash::Filters::Split < LogStash::Filters::Base
   config :target, :validate => :string
 
   def register
-    # set @target to @field if not configured
-    @target ||= @field
   end
 
   def filter(event)
     original_value = event.get(@field)
 
     if original_value.is_a?(Array)
-      splits = target.nil? ? event.remove(@field) : original_value
+      splits = @target.nil? ? event.remove(@field) : original_value
     elsif original_value.is_a?(String)
       # Using -1 for 'limit' on String#split makes ruby not drop trailing empty
       # splits.
@@ -81,12 +79,15 @@ class LogStash::Filters::Split < LogStash::Filters::Base
     # Skip filtering if splitting this event resulted in only one thing found.
     return if splits.length == 1 && original_value.is_a?(String)
 
+    # set event_target to @field if not configured
+    event_target = @target.nil? ? @field : @target
+
     splits.each do |value|
       next if value.nil? || (value.is_a?(String) && value.empty?)
       @logger.debug? && @logger.debug("Split event", :value => value, :field => @field)
 
       event_split = event.clone
-      event_split.set(@target, value)
+      event_split.set(event_target, value)
       filter_matched(event_split)
 
       # Push this new event onto the stack at the LogStash::FilterWorker
