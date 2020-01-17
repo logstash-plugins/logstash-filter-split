@@ -1,5 +1,7 @@
+## 3.1.8 Fixed issue where @target optimization would stop event.remove(@field) from being called, which can be expensive with large split fields. [#40](https://github.com/logstash-plugins/logstash-filter-split/pull/40)
+
 ## 3.1.7
-  - Fixed numeric values, optimized @target verification, cleanups and specs [36](https://github.com/logstash-plugins/logstash-filter-split/pull/36)
+  - Fixed numeric values, optimized @target verification, cleanups and specs [#36](https://github.com/logstash-plugins/logstash-filter-split/pull/36)
 
 ## 3.1.6
   - Fix crash on arrays with null values
