@@ -12,6 +12,10 @@ describe LogStash::Filters::Split do
       }
     CONFIG
 
+    sample "big\n" do
+      insist { subject.get("message") } == 'big'
+    end
+
     sample "big\nbird\nsesame street" do
       insist { subject.length } == 3
       insist { subject[0].get("message") } == "big"
