@@ -1,3 +1,6 @@
+## 3.1.9
+  - [DOC] Added introductory statement to clarify purpose of the plugin [#43](https://github.com/logstash-plugins/logstash-filter-split/pull/43)
+
 ## 3.1.8
   - Fixed issue where @target optimization would stop event.remove(@field) from being called, which can be expensive with large split fields. [#40](https://github.com/logstash-plugins/logstash-filter-split/pull/40)
 
