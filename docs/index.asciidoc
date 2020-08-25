@@ -20,7 +20,8 @@ include::{include_path}/plugin_header.asciidoc[]
 
 ==== Description
 
-The split filter splits multi-line messages into distinct events.
+The split filter splits multi-line messages, strings, or arrays into distinct
+events.
 
 It clones an event by splitting one of its fields and
 placing each value resulting from the split into a clone of the original
