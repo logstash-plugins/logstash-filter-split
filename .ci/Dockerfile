@@ -5,6 +5,7 @@ FROM docker.elastic.co/logstash/logstash${DISTRIBUTION_SUFFIX}:${ELASTIC_STACK_V
 # allows modifying the system inside the container (using the .ci/setup.sh hook)
 USER root
 RUN yum install -y sudo
+RUN yum install -y git
 RUN usermod -aG wheel logstash && \
     echo "logstash ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/logstash && \
     chmod 0440 /etc/sudoers.d/logstash
