@@ -51,7 +51,7 @@ describe LogStash::Filters::Split do
       }
     CONFIG
 
-    sample("custom" => "big\nbird\nsesame street", "do_not_touch" => "1\n2\n3") do
+    sample({"custom" => "big\nbird\nsesame street", "do_not_touch" => "1\n2\n3"}) do
       insist { subject.length } == 3
       subject.each do |s|
          insist { s.get("do_not_touch") } == "1\n2\n3"
@@ -71,7 +71,7 @@ describe LogStash::Filters::Split do
       }
     CONFIG
 
-    sample("array" => ["big", "bird", "sesame street"], "untouched" => "1\n2\n3") do
+    sample({"array" => ["big", "bird", "sesame street"], "untouched" => "1\n2\n3"}) do
       insist { subject.length } == 3
       subject.each do |s|
          insist { s.get("untouched") } == "1\n2\n3"
@@ -81,12 +81,12 @@ describe LogStash::Filters::Split do
       insist { subject[2].get("array") } == "sesame street"
     end
 
-    sample("array" => ["big"], "untouched" => "1\n2\n3") do
+    sample({"array" => ["big"], "untouched" => "1\n2\n3"}) do
       insist { subject.is_a?(Logstash::Event) }
       insist { subject.get("array") } == "big"
     end
 
-    sample("array" => ["single-element"], "untouched" => "1\n2\n3") do
+    sample({"array" => ["single-element"], "untouched" => "1\n2\n3"}) do
       insist { subject.get("array") } == "single-element"
       insist { subject.get("untouched") } == "1\n2\n3"
     end
@@ -101,7 +101,7 @@ describe LogStash::Filters::Split do
       }
     CONFIG
 
-    sample("array" => ["big", nil, "bird", nil, "sesame street"]) do
+    sample({"array" => ["big", nil, "bird", nil, "sesame street"]}) do
       insist { subject.length } == 3
       insist { subject[0].get("array") } == "big"
       insist { subject[1].get("array") } == "bird"
@@ -119,7 +119,7 @@ describe LogStash::Filters::Split do
       }
     CONFIG
 
-    sample("array" => ["big", "bird", "sesame street"]) do
+    sample({"array" => ["big", "bird", "sesame street"]}) do
       insist { subject.length } == 3
       insist { subject[0].get("element") } == "big"
       insist { subject[1].get("element") } == "bird"
@@ -137,7 +137,7 @@ describe LogStash::Filters::Split do
       }
     CONFIG
 
-    sample("array" => [1, 2, 3]) do
+    sample({"array" => [1, 2, 3]}) do
       insist { subject.length } == 3
       insist { subject[0].get("element") } == 1
       insist { subject[1].get("element") } == 2
@@ -155,7 +155,7 @@ describe LogStash::Filters::Split do
       }
     CONFIG
 
-    sample("array" => [1, 2, "three", ""]) do
+    sample({"array" => [1, 2, "three", ""]}) do
       insist { subject.length } == 3
       insist { subject[0].get("element") } == 1
       insist { subject[1].get("element") } == 2
