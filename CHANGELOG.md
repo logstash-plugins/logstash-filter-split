@@ -1,5 +1,5 @@
 ## 3.1.10
-  - Added trace log to track event size expansion
+  - Added trace log to track event size expansion [#49](https://github.com/logstash-plugins/logstash-filter-split/pull/49)
 
 ## 3.1.9
   - [DOC] Added introductory statement to clarify purpose of the plugin [#43](https://github.com/logstash-plugins/logstash-filter-split/pull/43)
