@@ -86,7 +86,6 @@ class LogStash::Filters::Split < LogStash::Filters::Base
     
     splits.each do |value|
       next if value.nil? || (value.is_a?(String) && value.empty?)
-      @logger.debug? && @logger.debug("Split event", :value => value, :field => @field)
 
       event_split = event.clone
       event_split.set(event_target, value)
