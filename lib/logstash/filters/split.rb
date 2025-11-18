@@ -100,10 +100,10 @@ class LogStash::Filters::Split < LogStash::Filters::Base
 
     if logger.trace?
       original_bytes = event.to_json.size
-      logger.trace("Event is split into #{splits.size}", 
-        :split_bytes => split_bytes, 
-        :original_bytes => original_bytes, 
-        :ratio => (split_bytes.to_f / original_bytes).round(2))
+      logger.trace("Estimated event size growth after split",
+        :original_bytes => original_bytes,
+        :split_bytes => split_bytes,
+        :growth_ratio => (split_bytes.to_f / original_bytes).round(2))
     end
 
     # Cancel this event, we'll use the newly generated ones above.
