@@ -82,7 +82,8 @@ class LogStash::Filters::Split < LogStash::Filters::Base
     # set event_target to @field if not configured
     event_target = @target.nil? ? @field : @target
     split_bytes = 0
-    logger.trace("Event being split into #{splits.size} events")
+    logger.trace? && logger.trace("Event being split into #{splits.size} events")
+    
     splits.each do |value|
       next if value.nil? || (value.is_a?(String) && value.empty?)
       @logger.debug? && @logger.debug("Split event", :value => value, :field => @field)
